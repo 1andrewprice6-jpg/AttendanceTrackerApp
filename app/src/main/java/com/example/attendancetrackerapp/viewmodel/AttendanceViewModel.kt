@@ -17,7 +17,10 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
     private val db = Room.databaseBuilder(
         application,
         AppDatabase::class.java, "attendance-db"
-    ).build()
+    )
+        .fallbackToDestructiveMigration()
+        .allowMainThreadQueries()
+        .build()
 
     val events: Flow<List<Event>> = db.eventDao().getAllEvents()
 
