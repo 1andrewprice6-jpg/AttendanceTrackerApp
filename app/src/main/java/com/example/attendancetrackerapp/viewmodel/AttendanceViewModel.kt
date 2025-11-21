@@ -2,16 +2,17 @@ package com.example.attendancetrackerapp.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.room.Room
 import com.example.attendancetrackerapp.data.Attendee
 import com.example.attendancetrackerapp.data.AttendanceStatus
 import com.example.attendancetrackerapp.data.Event
 import com.example.attendancetrackerapp.db.AppDatabase
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
+import java.util.concurrent.Executors
 
 class AttendanceViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val executor = Executors.newSingleThreadExecutor()
 
     private val db = Room.databaseBuilder(
         application,
@@ -25,20 +26,25 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun addEvent(name: String, date: String) {
-        viewModelScope.launch {
+        executor.execute {
             db.eventDao().insertEvent(Event(name = name, date = date))
         }
     }
 
     fun addAttendee(eventId: Int, name: String, status: AttendanceStatus) {
-        viewModelScope.launch {
+        executor.execute {
             db.attendeeDao().insertAttendee(Attendee(eventId = eventId, name = name, status = status))
         }
     }
 
     fun updateAttendee(attendee: Attendee) {
-        viewModelScope.launch {
+        executor.execute {
             db.attendeeDao().updateAttendee(attendee)
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        executor.shutdown()
     }
 }
