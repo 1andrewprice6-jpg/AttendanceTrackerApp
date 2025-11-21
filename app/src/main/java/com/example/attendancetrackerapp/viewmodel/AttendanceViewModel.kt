@@ -2,52 +2,49 @@ package com.example.attendancetrackerapp.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.room.Room
 import com.example.attendancetrackerapp.data.Attendee
 import com.example.attendancetrackerapp.data.AttendanceStatus
 import com.example.attendancetrackerapp.data.Event
-import com.example.attendancetrackerapp.db.AppDatabase
-import kotlinx.coroutines.flow.Flow
-import java.util.concurrent.Executors
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class AttendanceViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val executor = Executors.newSingleThreadExecutor()
+    private val _events = MutableStateFlow<List<Event>>(emptyList())
+    val events: StateFlow<List<Event>> = _events.asStateFlow()
 
-    private val db = Room.databaseBuilder(
-        application,
-        AppDatabase::class.java, "attendance-db"
-    )
-        .fallbackToDestructiveMigration()
-        .allowMainThreadQueries()
-        .build()
+    private val _attendees = MutableStateFlow<Map<Int, List<Attendee>>>(emptyMap())
 
-    val events: Flow<List<Event>> = db.eventDao().getAllEvents()
+    private var nextEventId = 1
+    private var nextAttendeeId = 1
 
-    fun getAttendeesForEvent(eventId: Int): Flow<List<Attendee>> {
-        return db.attendeeDao().getAttendeesForEvent(eventId)
+    fun getAttendeesForEvent(eventId: Int): StateFlow<List<Attendee>> {
+        val attendeeList = _attendees.value[eventId] ?: emptyList()
+        return MutableStateFlow(attendeeList).asStateFlow()
     }
 
     fun addEvent(name: String, date: String) {
-        executor.execute {
-            db.eventDao().insertEvent(Event(name = name, date = date))
-        }
+        val newEvent = Event(id = nextEventId++, name = name, date = date)
+        _events.value = _events.value + newEvent
     }
 
     fun addAttendee(eventId: Int, name: String, status: AttendanceStatus) {
-        executor.execute {
-            db.attendeeDao().insertAttendee(Attendee(eventId = eventId, name = name, status = status))
-        }
+        val newAttendee = Attendee(
+            id = nextAttendeeId++,
+            eventId = eventId,
+            name = name,
+            status = status
+        )
+        val currentAttendees = _attendees.value[eventId] ?: emptyList()
+        _attendees.value = _attendees.value + (eventId to (currentAttendees + newAttendee))
     }
 
     fun updateAttendee(attendee: Attendee) {
-        executor.execute {
-            db.attendeeDao().updateAttendee(attendee)
+        val currentAttendees = _attendees.value[attendee.eventId] ?: emptyList()
+        val updatedAttendees = currentAttendees.map {
+            if (it.id == attendee.id) attendee else it
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        executor.shutdown()
+        _attendees.value = _attendees.value + (attendee.eventId to updatedAttendees)
     }
 }
