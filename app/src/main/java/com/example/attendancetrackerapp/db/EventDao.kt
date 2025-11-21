@@ -14,11 +14,11 @@ interface EventDao {
     fun getAllEvents(): Flow<List<Event>>
 
     @Insert
-    suspend fun insertEvent(event: Event)
+    fun insertEvent(event: Event)
 
     @Update
-    suspend fun updateEvent(event: Event)
+    fun updateEvent(event: Event)
 
     @Delete
-    suspend fun deleteEvent(event: Event)
+    fun deleteEvent(event: Event)
 }
