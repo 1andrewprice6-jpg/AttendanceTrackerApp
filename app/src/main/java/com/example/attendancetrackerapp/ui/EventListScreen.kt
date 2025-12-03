@@ -56,7 +56,7 @@ fun EventListScreen(navController: NavController, viewModel: AttendanceViewModel
         Spacer(modifier = Modifier.height(16.dp))
 
         LazyColumn(modifier = Modifier.weight(1f)) {
-            items(events) { event ->
+            items(events, key = { it.id }) { event ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
