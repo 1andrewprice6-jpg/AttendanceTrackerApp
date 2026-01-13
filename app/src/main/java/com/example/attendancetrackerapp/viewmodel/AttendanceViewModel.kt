@@ -8,7 +8,6 @@ import com.example.attendancetrackerapp.data.Event
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.UUID
 
 class AttendanceViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -26,7 +25,10 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private fun generateAuthToken(): String {
-        return UUID.randomUUID().toString().substring(0, 8)
+        val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        return (1..8)
+            .map { chars.random() }
+            .joinToString("")
     }
 
     fun addEvent(name: String, date: String) {
