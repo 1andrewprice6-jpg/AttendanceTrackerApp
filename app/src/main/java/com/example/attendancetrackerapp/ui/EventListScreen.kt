@@ -70,6 +70,10 @@ fun EventListScreen(navController: NavController, viewModel: AttendanceViewModel
                         Text(text = event.name, style = MaterialTheme.typography.titleMedium)
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(text = event.date, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.secondary)
+                        if (event.authToken.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(text = "Token: ${event.authToken}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
+                        }
                     }
                 }
             }
