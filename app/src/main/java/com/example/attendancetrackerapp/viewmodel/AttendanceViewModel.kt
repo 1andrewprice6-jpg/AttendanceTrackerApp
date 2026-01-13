@@ -8,6 +8,7 @@ import com.example.attendancetrackerapp.data.Event
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.security.SecureRandom
 
 class AttendanceViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -26,8 +27,9 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
 
     private fun generateAuthToken(): String {
         val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        val secureRandom = SecureRandom()
         return (1..8)
-            .map { chars.random() }
+            .map { chars[secureRandom.nextInt(chars.length)] }
             .joinToString("")
     }
 

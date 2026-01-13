@@ -88,9 +88,11 @@ fun EventListScreen(navController: NavController, viewModel: AttendanceViewModel
                                 Spacer(modifier = Modifier.width(8.dp))
                                 IconButton(
                                     onClick = {
-                                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                        val clip = ClipData.newPlainText("Event Token", event.authToken)
-                                        clipboard.setPrimaryClip(clip)
+                                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+                                        clipboard?.let {
+                                            val clip = ClipData.newPlainText("Event Token", event.authToken)
+                                            it.setPrimaryClip(clip)
+                                        }
                                     },
                                     modifier = Modifier.padding(0.dp)
                                 ) {
