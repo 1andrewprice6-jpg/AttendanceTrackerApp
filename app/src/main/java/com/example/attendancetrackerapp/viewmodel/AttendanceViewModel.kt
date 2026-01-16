@@ -52,7 +52,14 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
         val currentAttendees = _attendees.value[eventId] ?: emptyList()
         val uniqueAttendees = currentAttendees.groupBy { it.name.trim().lowercase() }
             .map { (_, duplicates) ->
-                duplicates.first()
+                // Keep the attendee with the best status (PRESENT > LATE > ABSENT)
+                duplicates.maxByOrNull { 
+                    when (it.status) {
+                        AttendanceStatus.PRESENT -> 2
+                        AttendanceStatus.LATE -> 1
+                        AttendanceStatus.ABSENT -> 0
+                    }
+                } ?: duplicates.first()
             }
         _attendees.value = _attendees.value + (eventId to uniqueAttendees)
     }
