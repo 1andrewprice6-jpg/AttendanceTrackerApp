@@ -47,4 +47,13 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
         }
         _attendees.value = _attendees.value + (attendee.eventId to updatedAttendees)
     }
+
+    fun combineDuplicateAttendees(eventId: Int) {
+        val currentAttendees = _attendees.value[eventId] ?: emptyList()
+        val uniqueAttendees = currentAttendees.groupBy { it.name.trim().lowercase() }
+            .map { (_, duplicates) ->
+                duplicates.first()
+            }
+        _attendees.value = _attendees.value + (eventId to uniqueAttendees)
+    }
 }

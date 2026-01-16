@@ -82,5 +82,11 @@ fun AttendanceScreen(navController: NavController, eventId: Int, viewModel: Atte
         }) {
             Text("Add Attendee")
         }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {
+            viewModel.combineDuplicateAttendees(eventId)
+        }) {
+            Text("Combine Duplicate Attendees")
+        }
     }
 }
