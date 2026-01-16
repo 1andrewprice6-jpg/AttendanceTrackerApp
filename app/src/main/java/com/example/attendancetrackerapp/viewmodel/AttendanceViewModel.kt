@@ -58,7 +58,7 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
         val uniqueAttendees = currentAttendees.groupBy { it.name.trim().lowercase() }
             .map { (_, duplicates) ->
                 // Keep the attendee with the best status
-                duplicates.maxByOrNull { getStatusPriority(it.status) } ?: duplicates.first()
+                duplicates.maxBy { getStatusPriority(it.status) }
             }
         _attendees.value = _attendees.value + (eventId to uniqueAttendees)
     }
