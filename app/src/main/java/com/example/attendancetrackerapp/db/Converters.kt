@@ -11,6 +11,6 @@ class Converters {
 
     @TypeConverter
     fun toAttendanceStatus(value: String): AttendanceStatus {
-        return AttendanceStatus.valueOf(value)
+        return AttendanceStatus.entries.find { it.name == value } ?: AttendanceStatus.ABSENT
     }
 }

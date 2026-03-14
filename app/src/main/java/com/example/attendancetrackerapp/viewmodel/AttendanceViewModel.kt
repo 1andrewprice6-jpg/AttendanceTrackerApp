@@ -1,50 +1,78 @@
 package com.example.attendancetrackerapp.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.room.Room
 import com.example.attendancetrackerapp.data.Attendee
 import com.example.attendancetrackerapp.data.AttendanceStatus
 import com.example.attendancetrackerapp.data.Event
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.example.attendancetrackerapp.db.AppDatabase
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import java.util.concurrent.ConcurrentHashMap
 
 class AttendanceViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _events = MutableStateFlow<List<Event>>(emptyList())
-    val events: StateFlow<List<Event>> = _events.asStateFlow()
+    private val db = Room.databaseBuilder(
+        application,
+        AppDatabase::class.java,
+        "attendance_db"
+    ).build()
 
-    private val _attendees = MutableStateFlow<Map<Int, List<Attendee>>>(emptyMap())
+    private val eventDao = db.eventDao()
+    private val attendeeDao = db.attendeeDao()
 
-    private var nextEventId = 1
-    private var nextAttendeeId = 1
+    val events: StateFlow<List<Event>> = eventDao.getAllEvents()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun getAttendeesForEvent(eventId: Int): StateFlow<List<Attendee>> {
-        val attendeeList = _attendees.value[eventId] ?: emptyList()
-        return MutableStateFlow(attendeeList).asStateFlow()
-    }
+    private val attendeeFlows = ConcurrentHashMap<Int, StateFlow<List<Attendee>>>()
+
+    fun getAttendeesForEvent(eventId: Int): StateFlow<List<Attendee>> =
+        attendeeFlows.getOrPut(eventId) {
+            attendeeDao.getAttendeesForEvent(eventId)
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        }
 
     fun addEvent(name: String, date: String) {
-        val newEvent = Event(id = nextEventId++, name = name, date = date)
-        _events.value = _events.value + newEvent
+        viewModelScope.launch {
+            try {
+                eventDao.insertEvent(Event(name = name, date = date))
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to insert event", e)
+            }
+        }
     }
 
     fun addAttendee(eventId: Int, name: String, status: AttendanceStatus) {
-        val newAttendee = Attendee(
-            id = nextAttendeeId++,
-            eventId = eventId,
-            name = name,
-            status = status
-        )
-        val currentAttendees = _attendees.value[eventId] ?: emptyList()
-        _attendees.value = _attendees.value + (eventId to (currentAttendees + newAttendee))
+        viewModelScope.launch {
+            try {
+                attendeeDao.insertAttendee(Attendee(eventId = eventId, name = name, status = status))
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to insert attendee", e)
+            }
+        }
     }
 
     fun updateAttendee(attendee: Attendee) {
-        val currentAttendees = _attendees.value[attendee.eventId] ?: emptyList()
-        val updatedAttendees = currentAttendees.map {
-            if (it.id == attendee.id) attendee else it
+        viewModelScope.launch {
+            try {
+                attendeeDao.updateAttendee(attendee)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to update attendee", e)
+            }
         }
-        _attendees.value = _attendees.value + (attendee.eventId to updatedAttendees)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        db.close()
+    }
+
+    companion object {
+        private const val TAG = "AttendanceViewModel"
     }
 }
