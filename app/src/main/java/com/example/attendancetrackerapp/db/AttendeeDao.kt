@@ -14,11 +14,11 @@ interface AttendeeDao {
     fun getAttendeesForEvent(eventId: Int): Flow<List<Attendee>>
 
     @Insert
-    fun insertAttendee(attendee: Attendee)
+    suspend fun insertAttendee(attendee: Attendee)
 
     @Update
-    fun updateAttendee(attendee: Attendee)
+    suspend fun updateAttendee(attendee: Attendee)
 
     @Delete
-    fun deleteAttendee(attendee: Attendee)
+    suspend fun deleteAttendee(attendee: Attendee)
 }
