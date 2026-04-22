@@ -2,6 +2,8 @@ package com.example.attendancetrackerapp.ui.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -17,20 +19,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AttendanceStatCard(
     title: String,
     value: String,
     color: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
 ) {
-    var pressed by remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
         if (pressed) 0.96f else 1f,
         spring(Spring.DampingRatioMediumBouncy),
         label = "stat_scale"
     )
     Card(
+        onClick = onClick,
+        interactionSource = interactionSource,
         modifier = modifier.graphicsLayer { scaleX = scale; scaleY = scale }
             .shadow(6.dp, RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
@@ -75,7 +82,7 @@ fun GradientProgressBar(progress: Float, color: Color, modifier: Modifier = Modi
     )
     Box(modifier = modifier.fillMaxWidth().height(12.dp).clip(RoundedCornerShape(6.dp))
         .background(color.copy(alpha = 0.2f))) {
-        Box(modifier = Modifier.fillMaxWidth(animatedProgress).fillMaxHeight()
+        Box(modifier = Modifier.fillMaxWidth(animatedProgress.coerceIn(0f, 1f)).fillMaxHeight()
             .clip(RoundedCornerShape(6.dp))
             .background(Brush.horizontalGradient(listOf(color, color.copy(alpha = 0.7f)))))
     }

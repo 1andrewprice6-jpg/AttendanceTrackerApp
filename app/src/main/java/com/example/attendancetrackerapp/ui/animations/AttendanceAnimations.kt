@@ -2,7 +2,6 @@ package com.example.attendancetrackerapp.ui.animations
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 
@@ -52,7 +51,8 @@ fun StatusBadgeAnimation(
 @Composable
 fun StaggeredItemReveal(index: Int, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     var visible by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(index) {
+        visible = false
         kotlinx.coroutines.delay(index * 50L)
         visible = true
     }
