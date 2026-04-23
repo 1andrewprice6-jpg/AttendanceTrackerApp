@@ -1,9 +1,13 @@
 package com.example.attendancetrackerapp.data
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "attendees")
+@Entity(
+    tableName = "attendees",
+    indices = [Index(value = ["eventId"])]
+)
 data class Attendee(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,

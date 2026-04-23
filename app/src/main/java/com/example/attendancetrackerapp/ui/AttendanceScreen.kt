@@ -39,7 +39,7 @@ fun AttendanceScreen(navController: NavController, eventId: Int, viewModel: Atte
         Text("Attendance for Event $eventId")
         Spacer(modifier = Modifier.height(16.dp))
         LazyColumn(modifier = Modifier.weight(1f)) {
-            items(attendees) { attendee ->
+            items(attendees, key = { it.id }) { attendee ->
                 var expanded by remember { mutableStateOf(false) }
                 Row(
                     modifier = Modifier
