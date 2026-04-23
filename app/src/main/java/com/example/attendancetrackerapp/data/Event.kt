@@ -8,5 +8,6 @@ data class Event(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val name: String,
-    val date: String
+    val date: String,
+    val authToken: String = ""
 )
