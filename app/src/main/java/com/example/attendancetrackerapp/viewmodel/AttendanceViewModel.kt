@@ -47,4 +47,25 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
         }
         _attendees.value = _attendees.value + (attendee.eventId to updatedAttendees)
     }
+
+    /**
+     * Combines duplicate attendees for a given event based on their names (case-insensitive).
+     * When duplicates are found, keeps the attendee with the highest priority status:
+     * PRESENT > LATE > ABSENT
+     */
+    fun combineDuplicateAttendees(eventId: Int) {
+        val currentAttendees = _attendees.value[eventId] ?: emptyList()
+        val uniqueAttendees = currentAttendees.groupBy { it.name.trim().lowercase() }
+            .map { (_, duplicates) ->
+                // Keep the attendee with the best status
+                duplicates.maxBy { getStatusPriority(it.status) }
+            }
+        _attendees.value = _attendees.value + (eventId to uniqueAttendees)
+    }
+
+    private fun getStatusPriority(status: AttendanceStatus): Int = when (status) {
+        AttendanceStatus.PRESENT -> 2
+        AttendanceStatus.LATE -> 1
+        AttendanceStatus.ABSENT -> 0
+    }
 }
